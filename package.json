@@ -1,0 +1,24 @@
+{
+  "name": "scheduler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "Scheduler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "mysql": "latest",
+    "date-utils": "latest",
+    "node-schedule": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/twooopark/Scheduler.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/twooopark/Scheduler/issues"
+  },
+  "homepage": "https://github.com/twooopark/Scheduler#readme"
+}
