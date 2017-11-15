@@ -7,9 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "mysql": "latest",
-    "date-utils": "latest",
-    "node-schedule": "latest"
+    "date-utils": "^1.2.21",
+    "mysql": "^2.15.0",
+    "node-schedule": "^1.2.5"
   },
   "repository": {
     "type": "git",
