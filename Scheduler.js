@@ -30,6 +30,9 @@ var scheduler_daily = schedule.scheduleJob('01 00 * * *', function(){
     'group by loc, type, DATE_FORMAT(err.TIME, "%Y-%m-%d") '+
   'ON DUPLICATE KEY UPDATE cnt=VALUES(cnt);';
 
+
+
+
   db.query(query, (err, result) => {
     if(err) {
       console.error(query, err)
@@ -69,5 +72,24 @@ var scheduler_hourly = schedule.scheduleJob('00 * * * *', function(){
     }
       dt.setHours(dt.getHours()+1);
       console.log("["+dt+"] : hourly Complete!!")
+  })
+});
+
+var scheduler_Temperature = schedule.scheduleJob('*/5 * * * *', function(){   
+  query +=
+  'UPDATE `smartschool`.`sensor`,( '+
+    'SELECT  date_format(X.TIME, "%Y%m") ,MAX(X.DATA)as mx,MIN(X.DATA)as mn '+
+    'FROM ( select * FROM sensor_data '+
+            'where type = 4 '+
+            'ORDER BY TIME DESC LIMIT 10000) AS X '+
+    'group by date_format(X.TIME, "%Y%m"))as G '+
+  'SET `MIN` = G.mn, `MAX` = G.mx '+
+  'WHERE TYPE = 4; ';
+
+  db.query(query, (err, result) => {
+    if(err) {
+      console.error(query, err)
+      return
+    }
   })
 });
