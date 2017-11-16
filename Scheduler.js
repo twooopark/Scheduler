@@ -54,6 +54,14 @@ var scheduler_hourly = schedule.scheduleJob('00 * * * *', function(){
     'group by loc, type, DATE_FORMAT(err.TIME, "%Y-%m-%d %H") '+
   'ON DUPLICATE KEY UPDATE cnt=VALUES(cnt);';
 
+  query +=
+  'INSERT INTO `smartschool`.`sensor_data_hourly`(`loc`,`type`,`time`,`avge`) '+
+    'SELECT c.LOCATION as loc, s.INFO AS type, DATE_FORMAT(d.TIME, "%Y-%m-%d %H") AS time, round(avg(DATA)) as avge '+
+    'FROM (select idx, MAC, TYPE, DATA, TIME from sensor_data where TIME BETWEEN \''+start_hour+'\' and \''+end_hour+'\')as d, classroom as c, sensor as s '+
+    'WHERE s.type = d.type and d.MAC = c.MAC_DEC '+
+    'group by loc, type, DATE_FORMAT(d.TIME, "%Y-%m-%d %H") '+
+  'ON DUPLICATE KEY UPDATE avge=VALUES(avge); ';
+
   db.query(query, (err, result) => {
     if(err) {
       console.error(query, err)
