@@ -76,7 +76,7 @@ var scheduler_hourly = schedule.scheduleJob('00 * * * *', function(){
 });
 
 var scheduler_Temperature = schedule.scheduleJob('*/5 * * * *', function(){   
-  query +=
+  var query =
   'UPDATE `smartschool`.`sensor`,( '+
     'SELECT  date_format(X.TIME, "%Y%m") ,MAX(X.DATA)as mx,MIN(X.DATA)as mn '+
     'FROM ( select * FROM sensor_data '+
