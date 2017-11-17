@@ -75,7 +75,7 @@ var scheduler_hourly = schedule.scheduleJob('00 * * * *', function(){
   })
 });
 
-var scheduler_Temperature = schedule.scheduleJob('*/5 * * * *', function(){   
+var scheduler_Temperature = schedule.scheduleJob('*/1 * * * *', function(){   
   var query =
   'UPDATE `smartschool`.`sensor`,( '+
     'SELECT  date_format(X.TIME, "%Y%m") ,MAX(X.DATA)as mx,MIN(X.DATA)as mn '+
@@ -83,7 +83,7 @@ var scheduler_Temperature = schedule.scheduleJob('*/5 * * * *', function(){
             'where type = 4 '+
             'ORDER BY TIME DESC LIMIT 10000) AS X '+
     'group by date_format(X.TIME, "%Y%m"))as G '+
-  'SET `MIN` = G.mn, `MAX` = G.mx '+
+  'SET `MIN` = G.mn-100, `MAX` = G.mx+100 '+
   'WHERE TYPE = 4; ';
 
   db.query(query, (err, result) => {
