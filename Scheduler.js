@@ -83,7 +83,7 @@ var scheduler_Temperature = schedule.scheduleJob('*/1 * * * *', function(){
             'where type = 4 '+
             'ORDER BY TIME DESC LIMIT 10000) AS X '+
     'group by date_format(X.TIME, "%Y%m"))as G '+
-  'SET `MIN` = G.mn-100, `MAX` = G.mx+100 '+
+  'SET `MIN` = G.mn-10, `MAX` = G.mx+10 '+
   'WHERE TYPE = 4; ';
 
   db.query(query, (err, result) => {
