@@ -62,10 +62,50 @@ var scheduler_error_hourly = schedule.scheduleJob('50 * * * *', function(){
     group by loc, type, DATE_FORMAT(d.TIME, "%Y-%m-%d %H") 
   ON DUPLICATE KEY UPDATE avge=VALUES(avge); 
 
+
+
   SELECT  date_format(X.TIME, "%Y%m") ,MAX(X.DATA)as mx,MIN(X.DATA)as mn 
   FROM ( select * FROM sensor_data 
         'where type = 4 
         'ORDER BY TIME DESC LIMIT 10000) AS X 
   group by date_format(X.TIME, "%Y%m"))as G 
+
+
+  INSERT INTO `smartschool`.`student`
+  (`CLASSROOM_MAC`,
+  `BLE_MAC`)
+  (
+    select cm,sm
+    from
+      (
+      select sm, cm, cnt,
+            @s_rank := IF(@current_s = sm, @s_rank + 1, 1) AS s_rank,
+            @current_s := sm
+      from
+        (
+        select s.BLE_MAC as sm, c.MAC_DEC as cm, count(*) as cnt
+        from RAW_BLE as s, classroom as c
+        where s.CLASSROOM_MAC = c.MAC_DEC and( c.LOCATION like '%반' or c.LOCATION = 'TEST_BLE')
+        group by s.BLE_MAC, c.MAC_DEC
+        having cnt > 10
+        order by BLE_MAC, cnt desc
+         )as t
+      )as k
+    where s_rank = 1
+  )
+  ON DUPLICATE KEY UPDATE CLASSROOM_MAC=VALUES(CLASSROOM_MAC), BLE_MAC=VALUES(BLE_MAC); 
+
+
+  module[D865950410E3]
+  237930803368163 BE
+  249657935881688 LE
+
+  module[D865950410DC]
+  241961354487256 LE
+
+
+  Mi-band[FBED0FEF850C]
+  276995593176332 BE
+  13769380982267  LE
 
  */

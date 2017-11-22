@@ -19,7 +19,7 @@ var scheduler_daily = schedule.scheduleJob('01 00 * * *', function(){
     'SELECT c.LOCATION as loc, s.INFO AS type, DATE_FORMAT(d.TIME, "%Y-%m-%d") AS time, round(avg(DATA)) as avge '+
     'FROM (select idx, MAC, TYPE, DATA, TIME from sensor_data where TIME BETWEEN \''+start_day+'\' and \''+end_day+'\')as d, classroom as c, sensor as s '+
     'WHERE s.type = d.type and d.MAC = c.MAC_DEC '+
-    'group by loc, type, DATE_FORMAT(d.TIME, "%Y-%m-%d") '+
+    'GROUP BY loc, type, DATE_FORMAT(d.TIME, "%Y-%m-%d") '+
   'ON DUPLICATE KEY UPDATE avge=VALUES(avge); ';
   
   query +=
@@ -27,21 +27,21 @@ var scheduler_daily = schedule.scheduleJob('01 00 * * *', function(){
     'SELECT c.LOCATION as loc, s.INFO AS type, DATE_FORMAT(err.TIME, "%Y-%m-%d") AS time, count(*) as cnt '+
     'FROM (select MAC, TYPE, TIME from sensor_error WHERE TIME BETWEEN \''+start_day+'\' and \''+end_day+'\') as err, classroom as c, sensor as s '+
     'WHERE s.type = err.type and err.MAC = c.MAC_DEC '+
-    'group by loc, type, DATE_FORMAT(err.TIME, "%Y-%m-%d") '+
+    'GROUP BY loc, type, DATE_FORMAT(err.TIME, "%Y-%m-%d") '+
   'ON DUPLICATE KEY UPDATE cnt=VALUES(cnt);';
   
   query +=
   'INSERT INTO `smartschool`.`student` '+
   '(`CLASSROOM_MAC`,`BLE_MAC`) '+
-  '(select cm,sm from '+
-      '(select sm, cm, cnt, @s_rank := IF(@current_s = sm, @s_rank + 1, 1) AS s_rank, @current_s := sm '+
-      'from(select s.BLE_MAC as sm, c.MAC_DEC as cm, count(*) as cnt '+
-        'from RAW_BLE as s, classroom as c '+
-        'where s.CLASSROOM_MAC = c.MAC_DEC and( c.LOCATION like \'%반\' or c.LOCATION = \'TEST%\') '+
-        'group by s.BLE_MAC, c.MAC_DEC '+
-        'having cnt > 10 '+
-        'order by BLE_MAC, cnt desc)as t)as k '+
-    'where s_rank = 1) '+
+  '(SELECT cm,sm FROM '+
+      '(SELECT sm, cm, cnt, @s_rank := IF(@current_s = sm, @s_rank + 1, 1) AS s_rank, @current_s := sm '+
+      'FROM(SELECT s.BLE_MAC as sm, c.MAC_DEC as cm, count(*) as cnt '+
+        'FROM RAW_BLE as s, classroom as c '+
+        'WHERE s.CLASSROOM_MAC = c.MAC_DEC and( c.LOCATION LIKE \'%반\' or c.LOCATION = \'TEST%\') '+
+        'GROUP BY s.BLE_MAC, c.MAC_DEC '+
+        'HAVING cnt > 10 '+
+        'ORDER BY BLE_MAC, cnt desc)as t)as k '+
+    'WHERE s_rank = 1) '+
   'ON DUPLICATE KEY UPDATE CLASSROOM_MAC=VALUES(CLASSROOM_MAC), BLE_MAC=VALUES(BLE_MAC);  ';
 
   db.query(query, (err, result) => {
@@ -65,7 +65,7 @@ var scheduler_hourly = schedule.scheduleJob('00 * * * *', function(){
     'SELECT c.LOCATION as loc, s.INFO AS type, DATE_FORMAT(err.TIME, "%Y-%m-%d %H") AS time, count(*) as cnt '+
     'FROM (select MAC, TYPE, TIME from sensor_error WHERE TIME BETWEEN \''+start_hour+'\' and \''+end_hour+'\') as err, classroom as c, sensor as s '+
     'WHERE s.type = err.type and err.MAC = c.MAC_DEC '+
-    'group by loc, type, DATE_FORMAT(err.TIME, "%Y-%m-%d %H") '+
+    'GROUP BY loc, type, DATE_FORMAT(err.TIME, "%Y-%m-%d %H") '+
   'ON DUPLICATE KEY UPDATE cnt=VALUES(cnt);';
 
   query +=
@@ -73,7 +73,7 @@ var scheduler_hourly = schedule.scheduleJob('00 * * * *', function(){
     'SELECT c.LOCATION as loc, s.INFO AS type, DATE_FORMAT(d.TIME, "%Y-%m-%d %H") AS time, round(avg(DATA)) as avge '+
     'FROM (select idx, MAC, TYPE, DATA, TIME from sensor_data where TIME BETWEEN \''+start_hour+'\' and \''+end_hour+'\')as d, classroom as c, sensor as s '+
     'WHERE s.type = d.type and d.MAC = c.MAC_DEC '+
-    'group by loc, type, DATE_FORMAT(d.TIME, "%Y-%m-%d %H") '+
+    'GROUP BY loc, type, DATE_FORMAT(d.TIME, "%Y-%m-%d %H") '+
   'ON DUPLICATE KEY UPDATE avge=VALUES(avge); ';
 
   db.query(query, (err, result) => {
@@ -96,7 +96,7 @@ var scheduler_Temperature = schedule.scheduleJob('*/5 * * * *', function(){
     'FROM ( select * FROM sensor_data '+
             'where type = 4 '+
             'ORDER BY TIME DESC LIMIT 10000) AS X '+
-    'group by date_format(X.TIME, "%Y%m"))as G '+
+    'GROUP BY date_format(X.TIME, "%Y%m"))as G '+
   'SET `MIN` = G.mn-10, `MAX` = G.mx+10 '+
   'WHERE TYPE = 4; ';
 
