@@ -29,9 +29,20 @@ var scheduler_daily = schedule.scheduleJob('01 00 * * *', function(){
     'WHERE s.type = err.type and err.MAC = c.MAC_DEC '+
     'group by loc, type, DATE_FORMAT(err.TIME, "%Y-%m-%d") '+
   'ON DUPLICATE KEY UPDATE cnt=VALUES(cnt);';
-
-
-
+  
+  query +=
+  'INSERT INTO `smartschool`.`student` '+
+  '(`CLASSROOM_MAC`,`BLE_MAC`) '+
+  '(select cm,sm from '+
+      '(select sm, cm, cnt, @s_rank := IF(@current_s = sm, @s_rank + 1, 1) AS s_rank, @current_s := sm '+
+      'from(select s.BLE_MAC as sm, c.MAC_DEC as cm, count(*) as cnt '+
+        'from RAW_BLE as s, classroom as c '+
+        'where s.CLASSROOM_MAC = c.MAC_DEC and( c.LOCATION like \'%반\' or c.LOCATION = \'TEST%\') '+
+        'group by s.BLE_MAC, c.MAC_DEC '+
+        'having cnt > 10 '+
+        'order by BLE_MAC, cnt desc)as t)as k '+
+    'where s_rank = 1) '+
+  'ON DUPLICATE KEY UPDATE CLASSROOM_MAC=VALUES(CLASSROOM_MAC), BLE_MAC=VALUES(BLE_MAC);  ';
 
   db.query(query, (err, result) => {
     if(err) {
@@ -75,7 +86,10 @@ var scheduler_hourly = schedule.scheduleJob('00 * * * *', function(){
   })
 });
 
-var scheduler_Temperature = schedule.scheduleJob('*/1 * * * *', function(){   
+var scheduler_Temperature = schedule.scheduleJob('*/5 * * * *', function(){       
+  var dt = new Date();
+  var today = dt.toFormat('YYYY-MM-DD');
+  
   var query =
   'UPDATE `smartschool`.`sensor`,( '+
     'SELECT  date_format(X.TIME, "%Y%m") ,MAX(X.DATA)as mx,MIN(X.DATA)as mn '+
@@ -85,6 +99,14 @@ var scheduler_Temperature = schedule.scheduleJob('*/1 * * * *', function(){
     'group by date_format(X.TIME, "%Y%m"))as G '+
   'SET `MIN` = G.mn-10, `MAX` = G.mx+10 '+
   'WHERE TYPE = 4; ';
+
+  query +=
+  'INSERT INTO `smartschool`.`ble_io_update`(`BLE_MAC`,`IN_TIME`,`OUT_TIME`) '+
+    '(SELECT r.BLE_MAC as BLE_MAC, MIN(r.TIME) as IN_TIME, MAX(r.TIME) as OUT_TIME '+
+    'FROM RAW_BLE as r, student as s '+
+    'where r.CLASSROOM_MAC = s.CLASSROOM_MAC and time > \''+today+'\' '+
+    'GROUP BY r.BLE_MAC) '+
+    'ON DUPLICATE KEY UPDATE IN_TIME=VALUES(IN_TIME), OUT_TIME=VALUES(OUT_TIME); ';
 
   db.query(query, (err, result) => {
     if(err) {
