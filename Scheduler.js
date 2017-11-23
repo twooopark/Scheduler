@@ -106,7 +106,7 @@ var scheduler_Temperature = schedule.scheduleJob('*/5 * * * *', function(){
     'FROM RAW_BLE as r, student as s '+
     'where r.CLASSROOM_MAC = s.CLASSROOM_MAC and time > \''+today+'\' '+
     'GROUP BY r.BLE_MAC) '+
-    'ON DUPLICATE KEY UPDATE IN_TIME=VALUES(IN_TIME), OUT_TIME=VALUES(OUT_TIME); ';
+  'ON DUPLICATE KEY UPDATE OUT_TIME=VALUES(OUT_TIME); ';
 
   db.query(query, (err, result) => {
     if(err) {

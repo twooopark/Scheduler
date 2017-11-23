@@ -95,6 +95,12 @@ var scheduler_error_hourly = schedule.scheduleJob('50 * * * *', function(){
   )
   ON DUPLICATE KEY UPDATE CLASSROOM_MAC=VALUES(CLASSROOM_MAC), BLE_MAC=VALUES(BLE_MAC); 
 
+ INSERT INTO `smartschool`.`ble_io_update`(`BLE_MAC`,`IN_TIME`,`OUT_TIME`) 
+    (SELECT r.BLE_MAC as BLE_MAC, MIN(r.TIME) as IN_TIME, MAX(r.TIME) as OUT_TIME 
+    FROM RAW_BLE as r, student as s 
+    where r.CLASSROOM_MAC = s.CLASSROOM_MAC and time > \''+today+'\' 
+    GROUP BY r.BLE_MAC) 
+  ON DUPLICATE KEY UPDATE IN_TIME=VALUES(IN_TIME), OUT_TIME=VALUES(OUT_TIME); 
 
   module[D865950410E3]
   237930803368163 BE
