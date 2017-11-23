@@ -44,6 +44,14 @@ var scheduler_daily = schedule.scheduleJob('01 00 * * *', function(){
     'WHERE s_rank = 1) '+
   'ON DUPLICATE KEY UPDATE CLASSROOM_MAC=VALUES(CLASSROOM_MAC), BLE_MAC=VALUES(BLE_MAC);  ';
 
+  query +=
+  'INSERT INTO `smartschool`.`ble_io_test`(`BLE_MAC`,`IN_TIME`,`OUT_TIME`) '+
+    '(SELECT r.BLE_MAC as BLE_MAC, MIN(r.TIME) as IN_TIME, MAX(r.TIME) as OUT_TIME '+
+    'FROM RAW_BLE as r, student as s '+
+    'where r.CLASSROOM_MAC = s.CLASSROOM_MAC and time > \''+today+'\' '+
+    'GROUP BY r.BLE_MAC) '+
+  'ON DUPLICATE KEY UPDATE OUT_TIME=VALUES(OUT_TIME); ';
+
   db.query(query, (err, result) => {
     if(err) {
       console.error(query, err)
