@@ -13,22 +13,35 @@ var db = mysql.createPool({
   multipleStatements : true
 });
 
-var scheduler_error_hourly = schedule.scheduleJob('50 * * * *', function(){      
- console.log("error_hourly Start!!")  
-  var query =
-  'INSERT INTO `smartschool`.`sensor_error_hourly`(`loc`,`type`,`time`,`cnt`) '+
-    'SELECT c.LOCATION as loc, s.INFO AS type, DATE_FORMAT(err.TIME, "%Y-%m-%d %H") AS time, count(*) as cnt '+
-    'FROM (select idx, MAC, TYPE, TIME from sensor_error order by idx desc limit 200000)as err, classroom as c, sensor as s '+
-    'WHERE s.type = err.type and err.MAC = c.MAC_DEC '+
-    'group by loc, type, DATE_FORMAT(err.TIME, "%Y-%m-%d %H") '+
-  'ON DUPLICATE KEY UPDATE cnt=VALUES(cnt);';
+
+var scheduler_test = schedule.scheduleJob('*/1 * * * * *', function(){ 
+  var dt = new Date();
+  var sec = dt.toFormat('YYYY-MM-DD HH24:MI:SS');
+  var hour = dt.toFormat('YYYY-MM-DD HH24');
+  var query = ''+
+      'SELECT distinct(MAC), c.LOCATION, t.NAME '+
+      'FROM smartschool.sensor_data_update as s, classroom as c left outer join teacher as t on c.MAC_DEC=t.CLASSROOM_MAC '+
+      'WHERE s.MAC=c.MAC_DEC and  s.TIME < \''+hour+'\' '+
+      'ORDER BY c.LOCATION;';
 
   db.query(query, (err, result) => {
     if(err) {
       console.error(query, err)
       return
+    } 
+    else {
+      console.log("["+hour+"시] : PUSH Complete!!")
+      var temp = "환경센서 오류정보 ["+sec+"]\n";
+
+      console.log(result)
+      console.log(result.body)
+      for(var i=0; i< result.length; i++){
+        temp += result[i].LOCATION + ", " + (result[i].NAME = result[i].NAME == null ? "없음" : result[i].NAME) +"\n";
+      }
+      message.contents.ko = temp;
+      console.log(message);
+      sendNotification(message);
     }
-      console.log("error_hourly Complete!!")
   })
 });
 

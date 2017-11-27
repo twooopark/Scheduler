@@ -123,3 +123,75 @@ var scheduler_Temperature = schedule.scheduleJob('*/5 * * * *', function(){
     }
   })
 });
+
+
+
+
+var sendNotification = function(data) {
+  var headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Authorization": "Basic NTlhOGM4ZWYtNWYwYy00YmI1LWI5OTktYjZjM2I5Mzc1OTBi"
+  };
+  
+  var options = {
+    host: "onesignal.com",
+    port: 443,
+    path: "/api/v1/notifications",
+    method: "POST",
+    headers: headers
+  };
+  
+  var https = require('https');
+  var req = https.request(options, function(res) {  
+    res.on('data', function(data) {
+      console.log("Response:");
+      console.log(JSON.parse(data));
+    });
+  });
+  
+  req.on('error', function(e) {
+    console.log("ERROR:");
+    console.log(e);
+  });
+  
+  req.write(JSON.stringify(data));
+  req.end();
+};
+
+var message = { 
+  app_id: "7e9b8655-ee5f-400b-bf5c-aaa895c6a08e",
+  contents: {"en": "TEST MESSAGE"},
+  included_segments: ["All"]
+};
+
+
+var scheduler_test = schedule.scheduleJob('00 * * * *', function(){ 
+  var dt = new Date();
+  var sec = dt.toFormat('YYYY-MM-DD HH24:MI:SS');
+  var hour = dt.toFormat('YYYY-MM-DD HH24');
+  var query = ''+
+      'SELECT distinct(MAC), c.LOCATION, t.NAME '+
+      'FROM smartschool.sensor_data_update as s, classroom as c left outer join teacher as t on c.MAC_DEC=t.CLASSROOM_MAC '+
+      'WHERE s.MAC=c.MAC_DEC and s.TIME < \''+hour+'\' '+
+      'ORDER BY c.LOCATION;';
+
+  db.query(query, (err, result) => {
+    if(err) {
+      console.error(query, err)
+      return
+    } 
+    else {
+      console.log("["+hour+"시] : PUSH Complete!!")
+      var temp = "환경센서 오류정보 ["+sec+"]\n";
+
+      console.log(result)
+      console.log(result.body)
+      for(var i=0; i< result.length; i++){
+        temp += result[i].LOCATION + ", " + (result[i].NAME = result[i].NAME == null ? "없음" : result[i].NAME) +"\n";
+      }
+      message.contents.ko = temp;
+      console.log(message);
+      sendNotification(message);
+    }
+  })
+});
