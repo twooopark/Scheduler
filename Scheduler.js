@@ -8,7 +8,7 @@ var start_day,
     start_hour,
     end_hour;
 
-var scheduler_daily = schedule.scheduleJob('01 00 * * *', function(){      
+var scheduler_daily = schedule.scheduleJob('05 00 * * *', function(){      
   var dt = new Date();
   end_day = dt.toFormat('YYYY-MM-DD');
   dt.setDate(dt.getDate()-1); 
@@ -165,7 +165,7 @@ var message = {
 };
 
 
-var scheduler_test = schedule.scheduleJob('00 * * * *', function(){ 
+var scheduler_test = schedule.scheduleJob('59 * * * *', function(){ 
   var dt = new Date();
   var sec = dt.toFormat('YYYY-MM-DD HH24:MI:SS');
   var hour = dt.toFormat('YYYY-MM-DD HH24');
@@ -181,16 +181,13 @@ var scheduler_test = schedule.scheduleJob('00 * * * *', function(){
       return
     } 
     else {
-      console.log("["+hour+"시] : PUSH Complete!!")
+      console.log("["+sec+"] : PUSH Complete!!")
       var temp = "환경센서 오류정보 ["+sec+"]\n";
 
-      console.log(result)
-      console.log(result.body)
       for(var i=0; i< result.length; i++){
         temp += result[i].LOCATION + ", " + (result[i].NAME = result[i].NAME == null ? "없음" : result[i].NAME) +"\n";
       }
       message.contents.ko = temp;
-      console.log(message);
       sendNotification(message);
     }
   })
