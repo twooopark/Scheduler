@@ -29,7 +29,7 @@ var scheduler_daily = schedule.scheduleJob('05 00 * * *', function(){
     'WHERE s.type = err.type and err.MAC = c.MAC_DEC '+
     'GROUP BY loc, type, DATE_FORMAT(err.TIME, "%Y-%m-%d") '+
   'ON DUPLICATE KEY UPDATE cnt=VALUES(cnt);';
-  
+/*
   query +=
   'INSERT INTO `smartschool`.`student` '+
   '(`CLASSROOM_MAC`,`BLE_MAC`) '+
@@ -43,6 +43,7 @@ var scheduler_daily = schedule.scheduleJob('05 00 * * *', function(){
         'ORDER BY BLE_MAC, cnt desc)as t)as k '+
     'WHERE s_rank = 1) '+
   'ON DUPLICATE KEY UPDATE CLASSROOM_MAC=VALUES(CLASSROOM_MAC), BLE_MAC=VALUES(BLE_MAC);  ';
+*/
 
   query +=
   'INSERT INTO `smartschool`.`ble_io_test`(`BLE_MAC`,`IN_TIME`,`OUT_TIME`) '+
