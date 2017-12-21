@@ -100,14 +100,14 @@ var scheduler_Temperature = schedule.scheduleJob('*/5 * * * *', function(){
   var today = dt.toFormat('YYYY-MM-DD');
   
   var query =
-  'UPDATE `smartschool`.`sensor`,( '+
-    'SELECT  date_format(X.TIME, "%Y%m") ,MAX(X.DATA)as mx,MIN(X.DATA)as mn '+
-    'FROM ( select * FROM sensor_data '+
-            'where type = 4 '+
-            'ORDER BY TIME DESC LIMIT 10000) AS X '+
-    'GROUP BY date_format(X.TIME, "%Y%m"))as G '+
-  'SET `MIN` = G.mn-10, `MAX` = G.mx+10 '+
-  'WHERE TYPE = 4; ';
+  // 'UPDATE `smartschool`.`sensor`,( '+
+  //   'SELECT  date_format(X.TIME, "%Y%m") ,MAX(X.DATA)as mx,MIN(X.DATA)as mn '+
+  //   'FROM ( select * FROM sensor_data '+
+  //           'where type = 4 '+
+  //           'ORDER BY TIME DESC LIMIT 10000) AS X '+
+  //   'GROUP BY date_format(X.TIME, "%Y%m"))as G '+
+  // 'SET `MIN` = G.mn-10, `MAX` = G.mx+10 '+
+  // 'WHERE TYPE = 4; ';
 
   query +=
   'INSERT INTO `smartschool`.`ble_io_update`(`BLE_MAC`,`IN_TIME`,`OUT_TIME`) '+
@@ -131,7 +131,7 @@ var scheduler_Temperature = schedule.scheduleJob('*/5 * * * *', function(){
 var sendNotification = function(data) {
   var headers = {
     "Content-Type": "application/json; charset=utf-8",
-    "Authorization": "Basic NTlhOGM4ZWYtNWYwYy00YmI1LWI5OTktYjZjM2I5Mzc1OTBi"
+    "Authorization": "Basic ZWQ5MWJkNjQtZGZlYS00MjE1LTg3YmItNzJiYTcwN2I0Mzc5"// NTlhOGM4ZWYtNWYwYy00YmI1LWI5OTktYjZjM2I5Mzc1OTBi"
   };
   
   var options = {
@@ -160,7 +160,7 @@ var sendNotification = function(data) {
 };
 
 var message = { 
-  app_id: "7e9b8655-ee5f-400b-bf5c-aaa895c6a08e",
+  app_id: "79021df6-16d6-4b26-83df-e993198187a1",//7e9b8655-ee5f-400b-bf5c-aaa895c6a08e",
   contents: {"en": "TEST MESSAGE"},
   included_segments: ["All"]
 };
